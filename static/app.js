@@ -18,7 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
         crawlBtn.disabled = true;
         
         try {
-            const res = await fetch('/api/crawl');
+            let res = await fetch('/api/crawl');
+            if (!res.ok) {
+                // If API is not available (e.g. on GitHub Pages), try fetching static data.json
+                res = await fetch('data.json');
+            }
             const data = await res.json();
             
             // Switch views

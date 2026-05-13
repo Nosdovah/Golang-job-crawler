@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 
@@ -33,8 +35,8 @@ type MatchResult struct {
 	SharedStack []string   `json:"shared_stack"`
 }
 
-func handleCrawl(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("API request received: Crawling jobs...")
+func runCrawlLogic() CrawlResponse {
+	fmt.Println("Crawling jobs...")
 	
 	var allJobs []models.Job
 
@@ -60,10 +62,7 @@ func handleCrawl(w http.ResponseWriter, r *http.Request) {
 	}
 	allJobs = techJobs
 
-	if len(allJobs) == 0 {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CrawlResponse{TotalJobs: 0})
-		return
+		return CrawlResponse{TotalJobs: 0}
 	}
 
 	// 1. Requirement Stats
@@ -115,18 +114,37 @@ func handleCrawl(w http.ResponseWriter, r *http.Request) {
 		matches = matches[:10] // top 10 matches
 	}
 
-	resp := CrawlResponse{
+	return CrawlResponse{
 		TotalJobs: len(allJobs),
 		Stats:     stats,
 		Matches:   matches,
 		Jobs:      allJobs,
 	}
+}
 
+func handleCrawl(w http.ResponseWriter, r *http.Request) {
+	resp := runCrawlLogic()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
 
 func main() {
+	buildFlag := flag.Bool("build", false, "Build static JSON data file for GitHub Pages")
+	flag.Parse()
+
+	if *buildFlag {
+		fmt.Println("Building static data for GitHub Pages...")
+		resp := runCrawlLogic()
+		file, err := os.Create("static/data.json")
+		if err != nil {
+			log.Fatalf("Failed to create static/data.json: %v", err)
+		}
+		defer file.Close()
+		json.NewEncoder(file).Encode(resp)
+		fmt.Println("✅ Successfully built static/data.json")
+		return
+	}
+
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 
