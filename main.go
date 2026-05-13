@@ -15,6 +15,20 @@ import (
 	"golang-role-crawler/models"
 )
 
+func isMostlyEnglish(desc string) bool {
+	descLower := strings.ToLower(desc)
+	// Common German stop words
+	germanStopWords := []string{" und ", " der ", " die ", " das ", " mit ", " für ", " auf ", " sind ", " wir ", " eine ", " oder ", " werden ", " zu "}
+	germanCount := 0
+	for _, w := range germanStopWords {
+		if strings.Contains(descLower, w) {
+			germanCount++
+		}
+	}
+	// If description contains 2 or more distinct German stopwords, assume it's German
+	return germanCount < 2
+}
+
 type CrawlResponse struct {
 	TotalJobs int           `json:"total_jobs"`
 	Stats     []StatItem    `json:"stats"`
@@ -56,12 +70,12 @@ func runCrawlLogic() CrawlResponse {
 	jobicyJobs, _ := crawler.FetchJobicyJobs()
 	allJobs = append(allJobs, jobicyJobs...)
 
-	// Filter out non-tech roles
+	// Filter out non-tech roles and non-English roles
 	// To guarantee 100+ results for the dashboard, we will include all tech jobs 
-	// that have valid requirements extracted.
+	// that have valid requirements extracted AND are in English.
 	var techJobs []models.Job
 	for _, j := range allJobs {
-		if len(j.Requirements) > 0 {
+		if len(j.Requirements) > 0 && isMostlyEnglish(j.Description) {
 			techJobs = append(techJobs, j)
 		}
 	}
