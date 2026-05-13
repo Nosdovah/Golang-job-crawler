@@ -62,6 +62,7 @@ func runCrawlLogic() CrawlResponse {
 	}
 	allJobs = techJobs
 
+	if len(allJobs) == 0 {
 		return CrawlResponse{TotalJobs: 0}
 	}
 
