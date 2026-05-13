@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golang Role Crawler | Tech Radar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="container">
+        
+        <header class="glass-panel">
+            <div class="header-content">
+                <h1>Go<span>Crawler</span></h1>
+                <p>Global Job Aggregation & NLP Skill Analysis for Golang Developers</p>
+            </div>
+            <button id="crawlBtn" class="primary-btn">
+                <span class="btn-text">Initiate Scan</span>
+                <div class="spinner hidden"></div>
+            </button>
+        </header>
+
+        <main id="dashboard" class="hidden">
+            <section class="overview glass-panel fade-in">
+                <h2>Scan Complete</h2>
+                <div class="metric">
+                    <span id="totalJobs" class="number">0</span>
+                    <span class="label">Total Golang Roles Found</span>
+                </div>
+            </section>
+
+            <div class="grid-layout">
+                <!-- Left Column: Global Stats -->
+                <section class="stats-panel glass-panel fade-in delay-1">
+                    <h2>Market Requirements</h2>
+                    <p class="subtitle">Most requested tech stack combinations across crawled roles.</p>
+                    <div id="statsList" class="stats-list">
+                        <!-- Stats injected via JS -->
+                    </div>
+                </section>
+
+                <!-- Right Column: Similar Jobs -->
+                <section class="matches-panel glass-panel fade-in delay-2">
+                    <h2>Role Similarities</h2>
+                    <p class="subtitle">Job postings with >50% overlap in tech stack requirements.</p>
+                    <div id="matchesList" class="matches-list">
+                        <!-- Matches injected via JS -->
+                    </div>
+                </section>
+            </div>
+
+            <section class="jobs-panel glass-panel fade-in delay-3">
+                <h2>Raw Extracted Roles</h2>
+                <div id="jobsList" class="jobs-list">
+                    <!-- Jobs injected via JS -->
+                </div>
+            </section>
+        </main>
+
+        <div id="emptyState" class="empty-state fade-in">
+            <div class="icon">🔍</div>
+            <h2>System Idle</h2>
+            <p>Click "Initiate Scan" to crawl aggregators and analyze current market data.</p>
+        </div>
+
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
