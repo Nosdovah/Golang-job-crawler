@@ -53,22 +53,6 @@ func FetchArbeitnowJobs() ([]models.Job, error) {
 		}
 
 		for _, j := range data.Data {
-			// Check if it's a Golang job (title or tags)
-			isGoJob := false
-			titleLower := strings.ToLower(j.Title)
-			if strings.Contains(titleLower, " go ") || strings.Contains(titleLower, "golang") || strings.HasPrefix(titleLower, "go ") || strings.HasSuffix(titleLower, " go") {
-				isGoJob = true
-			}
-			for _, t := range j.Tags {
-				if strings.ToLower(t) == "golang" || strings.ToLower(t) == "go" {
-					isGoJob = true
-				}
-			}
-
-			if !isGoJob {
-				continue
-			}
-
 			cleanDesc := policy.Sanitize(j.Description)
 			
 			jobType := "Full-time"

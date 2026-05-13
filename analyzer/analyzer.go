@@ -22,19 +22,20 @@ func ExtractRequirements(desc string) []string {
 	found := make(map[string]bool)
 	var reqs []string
 
-	// Special check for "Go" as a programming language to avoid the English word "go"
-	// We look for "Go developer", "Go engineer", "Go programming", or "using Go"
-	goPatterns := []string{
-		`\bgo developer\b`, `\bgo engineer\b`, `\bgo backend\b`, 
-		`\bprogramming in go\b`, `\bexperience with go\b`, `\bgo programming\b`,
+	// Special case-sensitive check for "Go" as a programming language
+	// This avoids the lowercase english word "go" while perfectly capturing tech stacks like "React, Node, and Go"
+	if match, _ := regexp.MatchString(`\bGo\b`, desc); match {
+		if !found["go"] {
+			found["go"] = true
+			reqs = append(reqs, "go")
+		}
 	}
-	for _, p := range goPatterns {
-		if match, _ := regexp.MatchString(p, descLower); match {
-			if !found["go"] {
-				found["go"] = true
-				reqs = append(reqs, "go")
-			}
-			break
+	
+	// Also check for 'golang'
+	if match, _ := regexp.MatchString(`\bgolang\b`, descLower); match {
+		if !found["golang"] {
+			found["golang"] = true
+			reqs = append(reqs, "golang")
 		}
 	}
 

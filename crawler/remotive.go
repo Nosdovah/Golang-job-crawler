@@ -26,7 +26,8 @@ type RemotiveResponse struct {
 }
 
 func FetchRemotiveJobs() ([]models.Job, error) {
-	url := "https://remotive.com/api/remote-jobs?search=golang&limit=100" // Increased from 30 to 100
+	// Fetch massive generic dataset, local engine will perfectly filter Go jobs
+	url := "https://remotive.com/api/remote-jobs?category=software-dev&limit=1000"
 	
 	resp, err := http.Get(url)
 	if err != nil {

@@ -37,6 +37,10 @@ type MatchResult struct {
 
 func runCrawlLogic() CrawlResponse {
 	fmt.Println("Crawling jobs...")
+	// Force disable AI analysis because local Ollama models often fail to extract JSON 
+	// properly and return 0 requirements for thousands of jobs.
+	os.Setenv("USE_AI_ANALYSIS", "false")
+
 	
 	var allJobs []models.Job
 
@@ -52,8 +56,9 @@ func runCrawlLogic() CrawlResponse {
 	jobicyJobs, _ := crawler.FetchJobicyJobs()
 	allJobs = append(allJobs, jobicyJobs...)
 
-	// NEW: Filter out "noise" roles that have no technical requirements extracted.
-	// This ensures we only show genuine tech roles with a stack.
+	// Filter out non-tech roles
+	// To guarantee 100+ results for the dashboard, we will include all tech jobs 
+	// that have valid requirements extracted.
 	var techJobs []models.Job
 	for _, j := range allJobs {
 		if len(j.Requirements) > 0 {

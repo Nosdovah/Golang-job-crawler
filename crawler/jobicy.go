@@ -26,53 +26,54 @@ type JobicyResponse struct {
 }
 
 func FetchJobicyJobs() ([]models.Job, error) {
-	// Jobicy API for remote tech jobs
-	url := "https://jobicy.com/api/v2/remote-jobs?count=50&industry=dev&tag=golang"
-	
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var data JobicyResponse
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, err
-	}
-
 	var jobs []models.Job
 	policy := bluemonday.StripTagsPolicy()
 
-	for _, j := range data.Jobs {
-		cleanDesc := policy.Sanitize(j.JobDescription)
+	for page := 1; page <= 5; page++ {
+		url := fmt.Sprintf("https://jobicy.com/api/v2/remote-jobs?count=50&industry=dev&page=%d", page)
 		
-		job := models.Job{
-			ID:          fmt.Sprintf("jobicy-%d", j.ID),
-			Title:       j.JobTitle,
-			Company:     j.CompanyName,
-			Location:    j.JobGeo,
-			Type:        strings.Join(j.JobType, ", "),
-			Description: cleanDesc,
-			URL:         j.URL,
-			Source:      "Jobicy",
+		resp, err := http.Get(url)
+		if err != nil {
+			return jobs, err
 		}
 		
-		if os.Getenv("USE_AI_ANALYSIS") == "true" {
-			aiReqs, err := analyzer.ExtractRequirementsWithAI(cleanDesc)
-			if err == nil {
-				job.Requirements = aiReqs
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return jobs, err
+		}
+
+		var data JobicyResponse
+		if err := json.Unmarshal(body, &data); err != nil {
+			continue // Skip errors and go to next page
+		}
+
+		for _, j := range data.Jobs {
+			cleanDesc := policy.Sanitize(j.JobDescription)
+			
+			job := models.Job{
+				ID:          fmt.Sprintf("jobicy-%d", j.ID),
+				Title:       j.JobTitle,
+				Company:     j.CompanyName,
+				Location:    j.JobGeo,
+				Type:        strings.Join(j.JobType, ", "),
+				Description: cleanDesc,
+				URL:         j.URL,
+				Source:      "Jobicy",
+			}
+			
+			if os.Getenv("USE_AI_ANALYSIS") == "true" {
+				aiReqs, err := analyzer.ExtractRequirementsWithAI(cleanDesc)
+				if err == nil {
+					job.Requirements = aiReqs
+				} else {
+					job.Requirements = analyzer.ExtractRequirements(cleanDesc)
+				}
 			} else {
 				job.Requirements = analyzer.ExtractRequirements(cleanDesc)
 			}
-		} else {
-			job.Requirements = analyzer.ExtractRequirements(cleanDesc)
+			jobs = append(jobs, job)
 		}
-		jobs = append(jobs, job)
 	}
 
 	return jobs, nil
