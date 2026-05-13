@@ -15,17 +15,23 @@ import (
 	"golang-role-crawler/models"
 )
 
-func isMostlyEnglish(desc string) bool {
-	descLower := strings.ToLower(desc)
+func isMostlyEnglish(title, desc string) bool {
+	combinedLower := strings.ToLower(title + " " + desc)
+	
+	// Immediate rejection for standard German job title gender markers
+	if strings.Contains(combinedLower, "(m/w/d)") || strings.Contains(combinedLower, "(w/m/d)") || strings.Contains(combinedLower, "(m/f/d)") {
+		return false
+	}
+
 	// Common German stop words
-	germanStopWords := []string{" und ", " der ", " die ", " das ", " mit ", " für ", " auf ", " sind ", " wir ", " eine ", " oder ", " werden ", " zu "}
+	germanStopWords := []string{" und ", " der ", " die ", " das ", " mit ", " für ", " auf ", " sind ", " wir ", " eine ", " oder ", " werden ", " zu ", " gesucht "}
 	germanCount := 0
 	for _, w := range germanStopWords {
-		if strings.Contains(descLower, w) {
+		if strings.Contains(combinedLower, w) {
 			germanCount++
 		}
 	}
-	// If description contains 2 or more distinct German stopwords, assume it's German
+	// If combined title and description contains 2 or more distinct German stopwords, assume it's German
 	return germanCount < 2
 }
 
@@ -75,7 +81,7 @@ func runCrawlLogic() CrawlResponse {
 	// that have valid requirements extracted AND are in English.
 	var techJobs []models.Job
 	for _, j := range allJobs {
-		if len(j.Requirements) > 0 && isMostlyEnglish(j.Description) {
+		if len(j.Requirements) > 0 && isMostlyEnglish(j.Title, j.Description) {
 			techJobs = append(techJobs, j)
 		}
 	}
