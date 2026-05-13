@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('emptyState');
     
     const totalJobsEl = document.getElementById('totalJobs');
+    const marketSummaryEl = document.getElementById('marketSummary');
     const statsListEl = document.getElementById('statsList');
     const matchesListEl = document.getElementById('matchesList');
     const jobsListEl = document.getElementById('jobsList');
@@ -47,6 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Animate total jobs number
         animateValue(totalJobsEl, 0, data.total_jobs, 1000);
         
+        // Populate Summary
+        if (data.summary) {
+            marketSummaryEl.innerHTML = `<p><strong>Market Overview:</strong> ${data.summary}</p>`;
+        } else {
+            marketSummaryEl.innerHTML = '';
+        }
+
         // 1. Stats
         statsListEl.innerHTML = '';
         if (data.stats && data.stats.length > 0) {

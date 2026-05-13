@@ -40,6 +40,7 @@ type CrawlResponse struct {
 	Stats     []StatItem    `json:"stats"`
 	Matches   []MatchResult `json:"matches"`
 	Jobs      []models.Job  `json:"jobs"`
+	Summary   string        `json:"summary"`
 }
 
 type StatItem struct {
@@ -82,11 +83,19 @@ func runCrawlLogic() CrawlResponse {
 	allJobs = append(allJobs, remoteokJobs...)
 
 	// Filter out non-tech roles and non-English roles
-	// To guarantee 100+ results for the dashboard, we will include all tech jobs 
-	// that have valid requirements extracted AND are in English.
+	// To ensure we only get high-quality backend/tech roles, we require the job to have 
+	// at least one CORE backend tech stack element, not just generic terms like "agile" or "sql".
 	var techJobs []models.Job
 	for _, j := range allJobs {
-		if len(j.Requirements) > 0 && isMostlyEnglish(j.Title, j.Description) {
+		hasCoreTech := false
+		for _, req := range j.Requirements {
+			if req == "golang" || req == "go" || req == "rust" || req == "python" || req == "java" || req == "c++" || req == "node" || req == "kubernetes" || req == "docker" || req == "aws" || req == "gcp" {
+				hasCoreTech = true
+				break
+			}
+		}
+
+		if hasCoreTech && len(j.Requirements) > 0 && isMostlyEnglish(j.Title, j.Description) {
 			techJobs = append(techJobs, j)
 		}
 	}
@@ -145,11 +154,24 @@ func runCrawlLogic() CrawlResponse {
 		matches = matches[:10] // top 10 matches
 	}
 
+	// Generate Overall Market Summary
+	var summary string
+	if len(stats) >= 3 {
+		summary = fmt.Sprintf("Based on the analysis of %d high-quality roles, there is a strong similarity in Cloud-Native infrastructure. The most dominant requirements across these roles are %s (%d%%), %s (%d%%), and %s (%d%%).", 
+			len(allJobs),
+			stats[0].Requirement, stats[0].Percentage,
+			stats[1].Requirement, stats[1].Percentage,
+			stats[2].Requirement, stats[2].Percentage)
+	} else {
+		summary = "Not enough data to generate a market summary."
+	}
+
 	return CrawlResponse{
 		TotalJobs: len(allJobs),
 		Stats:     stats,
 		Matches:   matches,
 		Jobs:      allJobs,
+		Summary:   summary,
 	}
 }
 
