@@ -32,9 +32,9 @@ jobs:
           go-version: '1.22'
 
       - name: Crawl and generate data.json
-        run: go run main.go -build
-        env:
-          USE_AI_ANALYSIS: "false" # Set this to true in GitHub Secrets if you want to use Groq API
+        # RemoteOK and other APIs block GitHub Actions IPs (Cloudflare 403)
+        # So we deploy the locally built data.json instead of fetching on the server.
+        run: echo "Deploying locally cached data.json"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
