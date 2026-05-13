@@ -29,7 +29,7 @@ func FetchJobicyJobs() ([]models.Job, error) {
 	var jobs []models.Job
 	policy := bluemonday.StripTagsPolicy()
 
-	for page := 1; page <= 5; page++ {
+	for page := 1; page <= 10; page++ {
 		url := fmt.Sprintf("https://jobicy.com/api/v2/remote-jobs?count=50&industry=dev&page=%d", page)
 		
 		resp, err := http.Get(url)

@@ -76,6 +76,11 @@ func runCrawlLogic() CrawlResponse {
 	jobicyJobs, _ := crawler.FetchJobicyJobs()
 	allJobs = append(allJobs, jobicyJobs...)
 
+	// 4. Fetch from RemoteOK
+	fmt.Println("Fetching jobs from RemoteOK (Aggregator API)...")
+	remoteokJobs, _ := crawler.FetchRemoteOKJobs()
+	allJobs = append(allJobs, remoteokJobs...)
+
 	// Filter out non-tech roles and non-English roles
 	// To guarantee 100+ results for the dashboard, we will include all tech jobs 
 	// that have valid requirements extracted AND are in English.
