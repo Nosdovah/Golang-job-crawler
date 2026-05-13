@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -18,8 +19,8 @@ import (
 func isMostlyEnglish(title, desc string) bool {
 	combinedLower := strings.ToLower(title + " " + desc)
 	
-	// Immediate rejection for standard German job title gender markers
-	if strings.Contains(combinedLower, "(m/w/d)") || strings.Contains(combinedLower, "(w/m/d)") || strings.Contains(combinedLower, "(m/f/d)") {
+	// Immediate rejection for standard German job title gender markers e.g. (m/w/d), (f/m/x), (w/m/d)
+	if match, _ := regexp.MatchString(`\([a-z]/[a-z]/[a-z]\)`, combinedLower); match {
 		return false
 	}
 
@@ -31,8 +32,26 @@ func isMostlyEnglish(title, desc string) bool {
 			germanCount++
 		}
 	}
-	// If combined title and description contains 2 or more distinct German stopwords, assume it's German
 	return germanCount < 2
+}
+
+func isTechRole(title string) bool {
+	titleLower := strings.ToLower(title)
+	
+	// Must contain at least one strictly engineering/tech keyword in the title
+	whitelist := []string{
+		"engineer", "developer", "programmer", "architect", "backend", "frontend", "fullstack", 
+		"full-stack", "data scientist", "sre", "devops", "systems", "platform", "software",
+		"technical lead", "tech lead", "cto", "data engineer", "machine learning",
+	}
+	
+	for _, w := range whitelist {
+		if strings.Contains(titleLower, w) {
+			return true
+		}
+	}
+	
+	return false
 }
 
 type CrawlResponse struct {
@@ -89,13 +108,13 @@ func runCrawlLogic() CrawlResponse {
 	for _, j := range allJobs {
 		hasCoreTech := false
 		for _, req := range j.Requirements {
-			if req == "golang" || req == "go" || req == "rust" || req == "python" || req == "java" || req == "c++" || req == "node" || req == "kubernetes" || req == "docker" || req == "aws" || req == "gcp" {
+			if req == "golang" || req == "go" || req == "rust" || req == "python" || req == "java" || req == "c++" || req == "node" || req == "kubernetes" || req == "docker" || req == "aws" || req == "gcp" || req == "ruby" || req == "php" || req == "c#" || req == ".net" || req == "swift" || req == "kotlin" || req == "typescript" || req == "react" || req == "vue" || req == "angular" {
 				hasCoreTech = true
 				break
 			}
 		}
 
-		if hasCoreTech && len(j.Requirements) > 0 && isMostlyEnglish(j.Title, j.Description) {
+		if hasCoreTech && len(j.Requirements) > 0 && isMostlyEnglish(j.Title, j.Description) && isTechRole(j.Title) {
 			techJobs = append(techJobs, j)
 		}
 	}

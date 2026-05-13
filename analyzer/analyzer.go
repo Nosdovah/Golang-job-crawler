@@ -14,6 +14,7 @@ var TechKeywords = []string{
 	"terraform", "linux", "elasticsearch", "graphql", "sql", "nosql",
 	"tdd", "bdd", "agile", "scrum", "python", "java", "c++", "rust",
 	"gin", "echo", "fiber", "gorm", "sqlx", "chi", "swag", "promethus", "grafana",
+	"ruby", "php", "c#", ".net", "swift", "kotlin", "typescript", "react", "vue", "angular", "node",
 }
 
 // ExtractRequirements parses a text description and finds matching keywords

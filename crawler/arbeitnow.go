@@ -33,7 +33,7 @@ func FetchArbeitnowJobs() ([]models.Job, error) {
 	var jobs []models.Job
 	policy := bluemonday.StripTagsPolicy()
 
-	for page := 1; page <= 30; page++ { // Increased to 30 pages for much deeper search
+	for page := 1; page <= 60; page++ { // Increased to 60 pages for massive search depth
 		url := fmt.Sprintf("https://www.arbeitnow.com/api/job-board-api?page=%d", page)
 		
 		resp, err := http.Get(url)
